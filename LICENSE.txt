@@ -1,0 +1,22 @@
+All licenses in this repository are copyrighted by Vince Petrelli.
+This project is implemented by Fall'in A Peace based on materials (Udemy Course and GitHub repository) provided by Vince Petrelli.
+
+All code should only be used for informational purposes
+
+------------------------------------------------------------------------------
+
+Informational Purposes Only
+
+Vince Petrelli is the original author of the underlying work and reserves all rights to the work worldwide under
+copyright law, including all related and neighboring rights,
+to the extent allowed by law. **Vince Petrelli retains all original rights and ownership of the core project structure, concepts, and original code derived from his materials.**
+
+Fall'in A Peace is the adaptor and innovator of this specific repository.
+All rights to the adapted, modified, and original content, except for the underlying core work owned by Vince Petrelli, are reserved by Fall'in A Peace.
+
+The code under this repo can only be used for informational and learning purposes and not for commercial use of any kind.
+
+Other Information:
+
+    * Whoever wants to use the code for commercial purposes must contact the original author Vince Petrelli for permission to use the core work.
+    * Whoever wants to use the adapted, modified, or innovated parts of this specific repository for commercial purposes must contact Fall'in A Peace for permission to use.
