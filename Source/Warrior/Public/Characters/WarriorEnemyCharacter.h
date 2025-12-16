@@ -14,7 +14,13 @@ UCLASS()
 class WARRIOR_API AWarriorEnemyCharacter : public AWarriorBaseCharacter
 {
 	GENERATED_BODY()
+
+public:
 	AWarriorEnemyCharacter();
+
+	//~ Begin PawnCombat Interface.
+	virtual UPawnCombatComponent* GetPawnCombatComponent() const override;
+	//~ End PawnCombat Interface.
 
 protected:
 	//~ Begin APawn Interface.
