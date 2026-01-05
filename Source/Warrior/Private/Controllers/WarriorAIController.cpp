@@ -5,16 +5,14 @@
 #include "Navigation/CrowdFollowingComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
+#include "BehaviorTree/BlackboardComponent.h"
 
 #include "WarriorDebugHelper.h"
 
 AWarriorAIController::AWarriorAIController(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<UCrowdFollowingComponent>("PathFollowingComponent"))
 {
-	if (UCrowdFollowingComponent* CrowdComp = Cast<UCrowdFollowingComponent>(GetPathFollowingComponent()))
-	{
-		Debug::Print(TEXT("CrowdFollowingComponent valid"), FColor::Green);
-	}
+	
 	
 	AISenseConfig_Sight = CreateDefaultSubobject<UAISenseConfig_Sight>("EnemySenseConfig_Sight");
 	AISenseConfig_Sight->DetectionByAffiliation.bDetectEnemies = true;
@@ -46,10 +44,39 @@ ETeamAttitude::Type AWarriorAIController::GetTeamAttitudeTowards(const AActor& O
 	return ETeamAttitude::Friendly;
 }
 
+void AWarriorAIController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (UCrowdFollowingComponent* CrowdComp = Cast<UCrowdFollowingComponent>(GetPathFollowingComponent()))
+	{
+		/*Debug::Print(TEXT("CrowdFollowingComponent valid"), FColor::Green);*/
+		CrowdComp->SetCrowdSimulationState(bEnableDetourCrowdAvoidance ? ECrowdSimulationState::Enabled : ECrowdSimulationState::Disabled);
+
+		switch (DetourCrowdAvoidanceQuality)
+		{
+		case 1: CrowdComp->SetCrowdAvoidanceQuality(ECrowdAvoidanceQuality::Low); break;
+		case 2: CrowdComp->SetCrowdAvoidanceQuality(ECrowdAvoidanceQuality::Medium); break;
+		case 3: CrowdComp->SetCrowdAvoidanceQuality(ECrowdAvoidanceQuality::Good); break;
+		case 4: CrowdComp->SetCrowdAvoidanceQuality(ECrowdAvoidanceQuality::High); break;
+		default:
+			break;
+		}
+
+		CrowdComp->SetAvoidanceGroup(1);
+		CrowdComp->SetGroupsToAvoid(1);
+		CrowdComp->SetCrowdCollisionQueryRange(CollisionQueryRange);
+	}
+}
+
 void AWarriorAIController::OnEnemyPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
 	if (Stimulus.WasSuccessfullySensed() && Actor)
 	{
-		Debug::Print(Actor->GetActorNameOrLabel() + TEXT(" was sensed"), FColor::Green);
+		/*Debug::Print(Actor->GetActorNameOrLabel() + TEXT(" was sensed"), FColor::Green);*/
+		if (UBlackboardComponent* BlackboardComponent = GetBlackboardComponent())
+		{
+			BlackboardComponent->SetValueAsObject(FName("TargetActor"), Actor);
+		}
 	}
 }
