@@ -3,6 +3,7 @@
 
 #include "Items/Weapons/WarriorWeaponBase.h"
 #include "Components/BoxComponent.h"
+#include "WarriorFunctionLibrary.h"
 
 #include "WarriorDebugHelper.h"
 
@@ -31,14 +32,22 @@ void AWarriorWeaponBase::OnCollisionBoxBeginOverlap(UPrimitiveComponent* Overlap
 
 	if (APawn* HitPawn = Cast<APawn>(OtherActor))
 	{
-		if (WeaponOwingPawn != HitPawn)
+		if (UWarriorFunctionLibrary::IsTargetPawnHostile(WeaponOwingPawn, HitPawn))
 		{
-			/*Debug::Print(GetName() + TEXT(" begin overlap with") + HitPawn->GetName(), FColor::Green);*/
 			OnWeaponHitTarget.ExecuteIfBound(OtherActor);
 		}
-
-		// TODO: Implement hit check for enemy characters
 	}
+
+	//if (APawn* HitPawn = Cast<APawn>(OtherActor))
+	//{
+	//	if (WeaponOwingPawn != HitPawn)
+	//	{
+	//		/*Debug::Print(GetName() + TEXT(" begin overlap with") + HitPawn->GetName(), FColor::Green);*/
+	//		OnWeaponHitTarget.ExecuteIfBound(OtherActor);
+	//	}
+
+	//	// TODO: Implement hit check for enemy characters
+	//}
 }
 
 void AWarriorWeaponBase::OnCollisionBoxEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
@@ -49,13 +58,22 @@ void AWarriorWeaponBase::OnCollisionBoxEndOverlap(UPrimitiveComponent* Overlappe
 
 	if (APawn* HitPawn = Cast<APawn>(OtherActor))
 	{
-		if (WeaponOwingPawn != HitPawn)
+		if (UWarriorFunctionLibrary::IsTargetPawnHostile(WeaponOwingPawn, HitPawn))
 		{
-			/*Debug::Print(GetName() + TEXT(" end overlap with") + HitPawn->GetName(), FColor::Red);*/
 			OnWeaponPulledFromTarget.ExecuteIfBound(OtherActor);
 		}
-
-		// TODO: Implement hit check for enemy characters
 	}
+	
+
+	//if (APawn* HitPawn = Cast<APawn>(OtherActor))
+	//{
+	//	if (WeaponOwingPawn != HitPawn)
+	//	{
+	//		/*Debug::Print(GetName() + TEXT(" end overlap with") + HitPawn->GetName(), FColor::Red);*/
+	//		OnWeaponPulledFromTarget.ExecuteIfBound(OtherActor);
+	//	}
+
+	//	// TODO: Implement hit check for enemy characters
+	//}
 }
 
