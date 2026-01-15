@@ -6,6 +6,7 @@
 #include "Components/UI/HeroUIComponent.h"
 #include "EnemyUIComponent.generated.h"
 
+class UWarriorWidgetBase;
 /**
  * 
  */
@@ -14,4 +15,14 @@ class WARRIOR_API UEnemyUIComponent : public UHeroUIComponent
 {
 	GENERATED_BODY()
 	
+public:
+	UFUNCTION(BlueprintCallable)
+	void RegisterEnemyDrawnWidget(UWarriorWidgetBase* InWidgetToRegister);
+
+	UFUNCTION(BlueprintCallable)
+	void RemoveEnemyDrawnWidgetsIfAny();
+
+private:
+	TArray<UWarriorWidgetBase*> EnemyDrawnWidgets;
+
 };
