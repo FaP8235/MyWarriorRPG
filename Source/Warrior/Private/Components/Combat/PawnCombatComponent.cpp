@@ -53,24 +53,13 @@ void UPawnCombatComponent::ToggleWeaponCollision(bool bShouldEnable, EToggleDama
 {
 	if (ToggleDamageType == EToggleDamageType::CurrentEquippedWeapon)
 	{
-		AWarriorWeaponBase* WeaponToToggle = GetCharacterCurrentEquippedWeapon();
-
-		check(WeaponToToggle);
-
-		if (bShouldEnable)
-		{
-			WeaponToToggle->GetWeaponCollisionBox()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-			// Debug::Print(WeaponToToggle->GetName() + TEXT(" collision enabled"), FColor::Green);
-		}
-		else
-		{
-			WeaponToToggle->GetWeaponCollisionBox()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-			OverlappedActors.Empty();
-			// Debug::Print(WeaponToToggle->GetName() + TEXT(" collision disabled"), FColor::Red);
-		}
+		ToggleCurrentEquippedWeaponCollision(bShouldEnable);
+	}
+	else
+	{
+		ToggleBodyCollisionBoxCollision(bShouldEnable, ToggleDamageType);
 	}
 
-	// TODO: Handle body collision boxes
 }
 
 void UPawnCombatComponent::OnHitTargetActor(AActor* HitActor)
@@ -81,4 +70,28 @@ void UPawnCombatComponent::OnHitTargetActor(AActor* HitActor)
 void UPawnCombatComponent::OnWeaponPulledFromTargetActor(AActor* InteractedActor)
 {
 
+}
+
+void UPawnCombatComponent::ToggleCurrentEquippedWeaponCollision(bool bShouldEnable)
+{
+	AWarriorWeaponBase* WeaponToToggle = GetCharacterCurrentEquippedWeapon();
+
+	check(WeaponToToggle);
+
+	if (bShouldEnable)
+	{
+		WeaponToToggle->GetWeaponCollisionBox()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		// Debug::Print(WeaponToToggle->GetName() + TEXT(" collision enabled"), FColor::Green);
+	}
+	else
+	{
+		WeaponToToggle->GetWeaponCollisionBox()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		OverlappedActors.Empty();
+		// Debug::Print(WeaponToToggle->GetName() + TEXT(" collision disabled"), FColor::Red);
+	}
+}
+
+void UPawnCombatComponent::ToggleBodyCollisionBoxCollision(bool bShouldEnable, EToggleDamageType ToggleDamageType)
+{
 }
