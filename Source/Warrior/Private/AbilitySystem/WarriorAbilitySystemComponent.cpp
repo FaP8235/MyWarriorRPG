@@ -17,18 +17,11 @@ void UWarriorAbilitySystemComponent::OnAbilityInputPressed(const FGameplayTag& I
 		// 存在旧API弃用隐患，考虑后面修改为GetDynamicSpecSourceTags()
 		if (!AbilitySpec.DynamicAbilityTags.HasTagExact(InInputTag))	continue;
 
-		if (InInputTag.MatchesTag(WarriorGameplayTags::InputTag_Toggleable))
+		if (InInputTag.MatchesTag(WarriorGameplayTags::InputTag_Toggleable) && AbilitySpec.IsActive())
 		{
-			if (AbilitySpec.IsActive())
-			{
-				CancelAbilityHandle(AbilitySpec.Handle);
-			}
-			else
-			{
-				TryActivateAbility(AbilitySpec.Handle);
-			}
+			CancelAbilityHandle(AbilitySpec.Handle);
 		}
-		else
+		else 
 		{
 			TryActivateAbility(AbilitySpec.Handle);
 		}
