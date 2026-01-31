@@ -19,6 +19,7 @@ class WARRIOR_API UAbilityTask_ExecuteTaskOnTick : public UAbilityTask
 public:
 	UAbilityTask_ExecuteTaskOnTick();
 
+	// 在蓝图中创建一个可逐帧执行的任务节点
 	UFUNCTION(BlueprintCallable, Category = "Warrior|AbilityTasks", meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "true"))
 	static UAbilityTask_ExecuteTaskOnTick* ExecuteTaskOnTick(UGameplayAbility* OwningAbility);
 

@@ -209,7 +209,6 @@ void AWarriorHeroCharacter::Input_PickUpStonesStarted(const FInputActionValue& I
 
 void AWarriorHeroCharacter::Input_AbilityInputPressed(FGameplayTag InInputTag)
 {
-	// 调试点 1: 确认按键事件被角色接收，并确认标签值
 	//Debug::Print(FString::Printf(TEXT("Ability Input Pressed for Tag: %s"), *InInputTag.ToString()));
 
 	WarriorAbilitySystemComponent->OnAbilityInputPressed(InInputTag);
@@ -217,7 +216,6 @@ void AWarriorHeroCharacter::Input_AbilityInputPressed(FGameplayTag InInputTag)
 
 void AWarriorHeroCharacter::Input_AbilityInputReleased(FGameplayTag InInputTag)
 {
-	// 调试点 1: 确认按键事件被角色接收，并确认标签值
 	//Debug::Print(FString::Printf(TEXT("Ability Input Released for Tag: %s"), *InInputTag.ToString()));
 	WarriorAbilitySystemComponent->OnAbilityInputReleased(InInputTag);
 }

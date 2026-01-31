@@ -26,14 +26,17 @@ public:
 	AWarriorBaseCharacter();
 
 	//~ Begin IAbilitySystem Interface.
+	// GAS组件Get方法
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	//~ End IAbilitySystem Interface.
 	
 	//~ Begin IPawnCombat Interface.
+	// 战斗组件Get方法
 	virtual UPawnCombatComponent* GetPawnCombatComponent() const override;
 	//~ End IPawnCombat Interface.
 
 	//~ Begin IPawnUIInterface Interface.
+	// UI组件Get方法
 	virtual UPawnUIComponent* GetPawnUIComponent() const override;
 	//~ End IPawnUIInterface Interface.
 
