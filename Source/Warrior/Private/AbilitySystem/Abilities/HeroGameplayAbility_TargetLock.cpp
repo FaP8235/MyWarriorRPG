@@ -20,17 +20,25 @@
 
 void UHeroGameplayAbility_TargetLock::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
+	// 尝试锁定目标
 	TryLockOnTarget();
-	InitTargetLockMovement();
-	InitTargetLockMappingContext();
-
+	if (!AvailableActorsToLock.IsEmpty())
+	{
+		// 将移动速度切换为锁定目标后的移动速度
+		InitTargetLockMovement();
+		// 绑定目标锁定输入映射上下文
+		InitTargetLockMappingContext();
+	}
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
 
 void UHeroGameplayAbility_TargetLock::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
+	// 重置目标锁定的移速
 	ResetTargetLockMovement();
+	// 解绑目标锁定输入映射上下文
 	ResetTargetLockMappingContext();
+	// 清楚锁定目标相关的缓存数据
 	CleanUp();
 
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
@@ -38,8 +46,21 @@ void UHeroGameplayAbility_TargetLock::EndAbility(const FGameplayAbilitySpecHandl
 
 void UHeroGameplayAbility_TargetLock::OnTargetLockTick(float DeltaTime)
 {
+	// TODO：目标死亡时检查AvailableActorsToLock，切换为其他可锁定的敌人，否则取消能力
+	if (UWarriorFunctionLibrary::NativeDoesActorHaveTag(CurrentLockedActor, WarriorGameplayTags::Shared_Status_Dead))
+	{
+		for (AActor* Actor : AvailableActorsToLock)
+		{
+			if (Actor == CurrentLockedActor || UWarriorFunctionLibrary::NativeDoesActorHaveTag(Actor, WarriorGameplayTags::Shared_Status_Dead))
+			{
+				continue;
+			}
+			CurrentLockedActor = Actor;
+		}
+	}
+
+	// 没有可锁定目标、目标死亡、能力拥有者死亡时取消能力
 	if (!CurrentLockedActor || 
-		UWarriorFunctionLibrary::NativeDoesActorHaveTag(CurrentLockedActor, WarriorGameplayTags::Shared_Status_Dead) ||
 		UWarriorFunctionLibrary::NativeDoesActorHaveTag(GetHeroCharacterFromActorInfo(), WarriorGameplayTags::Shared_Status_Dead)
 		)
 	{
@@ -47,13 +68,16 @@ void UHeroGameplayAbility_TargetLock::OnTargetLockTick(float DeltaTime)
 		return;
 	}
 
+	// 逐Tick刷新目标锁定指示器
 	SetTargetLockWidgetPosition();
 
+	// 确认目标是否在翻滚或格挡
 	const bool bShouldOverrideRotation =
 		!UWarriorFunctionLibrary::NativeDoesActorHaveTag(GetHeroCharacterFromActorInfo(), WarriorGameplayTags::Player_Status_Rolling)
 		&&
 		!UWarriorFunctionLibrary::NativeDoesActorHaveTag(GetHeroCharacterFromActorInfo(), WarriorGameplayTags::Player_Status_Blocking);
 
+	// 如果没有，将角色视线持续锁定在目标身上
 	if (bShouldOverrideRotation)
 	{
 		FRotator LookAtRot = UKismetMathLibrary::FindLookAtRotation(
@@ -74,6 +98,7 @@ void UHeroGameplayAbility_TargetLock::OnTargetLockTick(float DeltaTime)
 
 void UHeroGameplayAbility_TargetLock::SwitchTarget(const FGameplayTag& InSwitchDirectionTag)
 {
+	// 获取可被锁定的目标集合，并将其拆分为角色左侧和右侧的目标集合
 	GetAvailableActorsToLock();
 
 	TArray<AActor*> ActorsOnLeft;
@@ -82,6 +107,7 @@ void UHeroGameplayAbility_TargetLock::SwitchTarget(const FGameplayTag& InSwitchD
 
 	GetAvailableActorsAroundTarget(ActorsOnLeft, ActorsOnRight);
 
+	// 如果锁定范围向左切换，选择左侧集合中距离最近的目标锁定，否则选择右侧集合中距离最近目标锁定
 	if (InSwitchDirectionTag == WarriorGameplayTags::Player_Event_SwtichTarget_Left)
 	{
 		NewTargetToLock = GetNearestTargetFromAvailableActors(ActorsOnLeft);
@@ -90,7 +116,7 @@ void UHeroGameplayAbility_TargetLock::SwitchTarget(const FGameplayTag& InSwitchD
 	{
 		NewTargetToLock = GetNearestTargetFromAvailableActors(ActorsOnRight);
 	}
-
+	// 将预锁定目标切换为当前锁定目标
 	if (NewTargetToLock)
 	{
 		CurrentLockedActor = NewTargetToLock;
@@ -124,8 +150,10 @@ void UHeroGameplayAbility_TargetLock::TryLockOnTarget()
 
 void UHeroGameplayAbility_TargetLock::GetAvailableActorsToLock()
 {
+	// 清空可锁定的目标集合
 	AvailableActorsToLock.Empty();
 
+	// 指定包围盒大小、距离、检测的Object类型，以此指定范围，在范围内检测所有符合查询条件的Actor，存入BoxTraceHits中
 	TArray<FHitResult> BoxTraceHits;
 
 	UKismetSystemLibrary::BoxTraceMultiForObjects(
@@ -141,6 +169,7 @@ void UHeroGameplayAbility_TargetLock::GetAvailableActorsToLock()
 		BoxTraceHits,
 		true
 	);
+	// 将检测到的所有非能力持有者Actor加入可锁定目标集合中
 	for (const FHitResult& TraceHit : BoxTraceHits)
 	{
 		if (AActor* HitActor = TraceHit.GetActor())
