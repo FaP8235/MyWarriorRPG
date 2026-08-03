@@ -20,6 +20,7 @@
 #include "Components/Camera/CameraStrafeAssistComponent.h"
 #include "Components/WidgetComponent.h"
 #include "UI/WarriorThreatRingWidget.h"
+#include "Combat/WarriorCombatTypes.h"
 #include "AbilitySystemBlueprintLibrary.h"
 #include "GameModes/WarriorBaseGameMode.h"
 
@@ -64,10 +65,8 @@ AWarriorHeroCharacter::AWarriorHeroCharacter()
 	ThreatRingWidgetComponent->SetupAttachment(GetMesh(), TEXT("root"));
 	ThreatRingWidgetComponent->SetWidgetClass(UWarriorThreatRingWidget::StaticClass());
 	ThreatRingWidgetComponent->SetRelativeLocation(FVector(0.f, 0.f, 45.f));
-	ThreatRingWidgetComponent->SetRelativeRotation(FRotator(90.f, 0.f, 0.f)); // 水平朝上（环绕角色腰部）
-	ThreatRingWidgetComponent->SetDrawSize(FVector2D(160.f, 160.f)); // 世界单位 cm
-	ThreatRingWidgetComponent->SetWidgetSpace(EWidgetSpace::World);
-	ThreatRingWidgetComponent->SetTwoSided(true);
+	ThreatRingWidgetComponent->SetDrawSize(FVector2D(280.f, 280.f));
+	ThreatRingWidgetComponent->SetWidgetSpace(EWidgetSpace::Screen);
 }
 
 UPawnCombatComponent* AWarriorHeroCharacter::GetPawnCombatComponent() const
@@ -164,6 +163,11 @@ void AWarriorHeroCharacter::BeginPlay() {
 	Super::BeginPlay();
 
 	//Debug::Print(TEXT("Working"));
+}
+
+void AWarriorHeroCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
 }
 
 void AWarriorHeroCharacter::Input_Move(const FInputActionValue& InputActionValue)
