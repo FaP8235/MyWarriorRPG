@@ -10,6 +10,7 @@ class UEnemyCombatComponent;
 class UEnemyUIComponent;
 class UWidgetComponent;
 class UBoxComponent;
+class UEnemyCombatAgentComponent;
 /**
  * 
  */
@@ -47,6 +48,9 @@ protected:
 	UEnemyCombatComponent* EnemyCombatComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+	UEnemyCombatAgentComponent* EnemyCombatAgentComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
 	UBoxComponent* LeftHandCollisionBox;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat")
@@ -72,6 +76,7 @@ private:
 
 public:
 	FORCEINLINE UEnemyCombatComponent* GetEnemyCombatComponent() const { return EnemyCombatComponent; }
+	FORCEINLINE UEnemyCombatAgentComponent* GetEnemyCombatAgentComponent() const { return EnemyCombatAgentComponent; }
 	FORCEINLINE UBoxComponent* GetLeftHandCollisionBox() const { return LeftHandCollisionBox; }
 	FORCEINLINE UBoxComponent* GetRightHandCollisionBox() const { return RightHandCollisionBox; }
 };

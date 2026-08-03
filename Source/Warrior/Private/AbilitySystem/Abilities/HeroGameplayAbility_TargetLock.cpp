@@ -15,90 +15,157 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "AbilitySystemBlueprintLibrary.h"
+#include "AbilitySystemComponent.h"
 
 #include "WarriorDebugHelper.h"
 
-void UHeroGameplayAbility_TargetLock::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
+UHeroGameplayAbility_TargetLock::UHeroGameplayAbility_TargetLock()
 {
-	// ³¢ÊÔËø¶¨Ä¿±ê
+	// Ä¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½á±£ï¿½æµ±Ç°Ä¿ï¿½ê¡¢ï¿½ï¿½Ñ¡ï¿½Ð±ï¿½ï¿½ï¿½UIï¿½Í¾ï¿½Í·ï¿½ï¿½ï¿½ï¿½×´Ì¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Óµï¿½ï¿½Ã¿ï¿½ï¿½ï¿½ï¿½É«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½
+	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
+}
+
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+void UHeroGameplayAbility_TargetLock::ActivateAbility(
+	const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo,
+	const FGameplayEventData* TriggerEventData)
+{
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½
 	TryLockOnTarget();
 	if (!AvailableActorsToLock.IsEmpty())
 	{
-		// ½«ÒÆ¶¯ËÙ¶ÈÇÐ»»ÎªËø¶¨Ä¿±êºóµÄÒÆ¶¯ËÙ¶È
+		// ï¿½ï¿½ï¿½Æ¶ï¿½ï¿½Ù¶ï¿½ï¿½Ð»ï¿½Îªï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½ï¿½Æ¶ï¿½ï¿½Ù¶ï¿½
 		InitTargetLockMovement();
-		// °ó¶¨Ä¿±êËø¶¨ÊäÈëÓ³ÉäÉÏÏÂÎÄ
+		// ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		InitTargetLockMappingContext();
 	}
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
 
-void UHeroGameplayAbility_TargetLock::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+void UHeroGameplayAbility_TargetLock::EndAbility(
+	const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo,
+	bool bReplicateEndAbility,
+	bool bWasCancelled)
 {
-	// ÖØÖÃÄ¿±êËø¶¨µÄÒÆËÙ
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	ResetTargetLockMovement();
-	// ½â°óÄ¿±êËø¶¨ÊäÈëÓ³ÉäÉÏÏÂÎÄ
+	// ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	ResetTargetLockMappingContext();
-	// Çå³þËø¶¨Ä¿±êÏà¹ØµÄ»º´æÊý¾Ý
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½ØµÄ»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	CleanUp();
 
-	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+	Super::EndAbility(
+		Handle,
+		ActorInfo,
+		ActivationInfo,
+		bReplicateEndAbility,
+		bWasCancelled
+	);
 }
 
+
+// ï¿½ï¿½Ö¡ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½
 void UHeroGameplayAbility_TargetLock::OnTargetLockTick(float DeltaTime)
 {
-	// TODO£ºÄ¿±êËÀÍöÊ±¼ì²éAvailableActorsToLock£¬ÇÐ»»ÎªÆäËû¿ÉËø¶¨µÄµÐÈË£¬·ñÔòÈ¡ÏûÄÜÁ¦
-	if (UWarriorFunctionLibrary::NativeDoesActorHaveTag(CurrentLockedActor, WarriorGameplayTags::Shared_Status_Dead))
-	{
-		for (AActor* Actor : AvailableActorsToLock)
-		{
-			if (Actor == CurrentLockedActor || UWarriorFunctionLibrary::NativeDoesActorHaveTag(Actor, WarriorGameplayTags::Shared_Status_Dead))
-			{
-				continue;
-			}
-			CurrentLockedActor = Actor;
-		}
-	}
+	AWarriorHeroCharacter* HeroCharacter = GetHeroCharacterFromActorInfo();
+	AWarriorHeroController* HeroController = GetHeroControllerFromActorInfo();
 
-	// Ã»ÓÐ¿ÉËø¶¨Ä¿±ê¡¢Ä¿±êËÀÍö¡¢ÄÜÁ¦ÓµÓÐÕßËÀÍöÊ±È¡ÏûÄÜÁ¦
-	if (!CurrentLockedActor || 
-		UWarriorFunctionLibrary::NativeDoesActorHaveTag(GetHeroCharacterFromActorInfo(), WarriorGameplayTags::Shared_Status_Dead)
-		)
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß»ò±¾µØ¿ï¿½ï¿½ï¿½ï¿½ï¿½Ê§Ð§Ê±È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	if (!IsValid(HeroCharacter)
+		|| !IsValid(HeroController)
+		|| DoesActorHaveGameplayTag(HeroCharacter, WarriorGameplayTags::Shared_Status_Dead))
 	{
 		CancelTargetLockAbility();
 		return;
 	}
 
-	// ÖðTickË¢ÐÂÄ¿±êËø¶¨Ö¸Ê¾Æ÷
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ù¡ï¿½ï¿½ë¿ªï¿½ï¿½Î§ï¿½ï¿½ï¿½ë¿ªï¿½ï¿½Ò°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê§Ð§ï¿½ï¿½Ö±ï¿½Ó³ï¿½ï¿½ï¿½ï¿½Ð»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð§Ä¿ï¿½ï¿½
+	if (!IsValidTargetToLock(CurrentLockedActor, false))
+	{
+		AActor* PreviousLockedActor = CurrentLockedActor;
+		if (!TrySelectNewTarget(PreviousLockedActor))
+		{
+			CancelTargetLockAbility();
+			return;
+		}
+	}
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë»ò³¡¾ï¿½ï¿½Úµï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Þ£ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿É¼ï¿½Ä¿ï¿½ï¿½
+	else if (!HasLineOfSightToTarget(CurrentLockedActor))
+	{
+		CurrentTargetOccludedTime += DeltaTime;
+		if (CurrentTargetOccludedTime >= TargetOcclusionGraceTime)
+		{
+			AActor* OccludedActor = CurrentLockedActor;
+			if (!TrySelectNewTarget(OccludedActor))
+			{
+				CancelTargetLockAbility();
+				return;
+			}
+		}
+	}
+	else
+	{
+		CurrentTargetOccludedTime = 0.f;
+	}
+
+	// ï¿½ï¿½TickË¢ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸Ê¾ï¿½ï¿½
 	SetTargetLockWidgetPosition();
 
-	// È·ÈÏÄ¿±êÊÇ·ñÔÚ·­¹ö»ò¸ñµ²
+	// È·ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½Ç·ï¿½ï¿½Ú·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	const bool bShouldOverrideRotation =
-		!UWarriorFunctionLibrary::NativeDoesActorHaveTag(GetHeroCharacterFromActorInfo(), WarriorGameplayTags::Player_Status_Rolling)
+		!DoesActorHaveGameplayTag(HeroCharacter, WarriorGameplayTags::Player_Status_Rolling)
 		&&
-		!UWarriorFunctionLibrary::NativeDoesActorHaveTag(GetHeroCharacterFromActorInfo(), WarriorGameplayTags::Player_Status_Blocking);
+		!DoesActorHaveGameplayTag(HeroCharacter, WarriorGameplayTags::Player_Status_Blocking);
 
-	// Èç¹ûÃ»ÓÐ£¬½«½ÇÉ«ÊÓÏß³ÖÐøËø¶¨ÔÚÄ¿±êÉíÉÏ
+	// ï¿½ï¿½ï¿½Ã»ï¿½Ð£ï¿½ï¿½ï¿½ï¿½ï¿½É«ï¿½ï¿½ï¿½ß³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	if (bShouldOverrideRotation)
 	{
 		FRotator LookAtRot = UKismetMathLibrary::FindLookAtRotation(
-			GetHeroCharacterFromActorInfo()->GetActorLocation(),
+			HeroCharacter->GetActorLocation(),
 			CurrentLockedActor->GetActorLocation()
 		);
 
 		LookAtRot -= FRotator(TargetLockCameraOffsetDistance, 0.f, 0.f);
 
-		const FRotator CurrentControlRot = GetHeroControllerFromActorInfo()->GetControlRotation();
-		const FRotator TargetRot = FMath::RInterpTo(CurrentControlRot, LookAtRot, DeltaTime, TargetLockRotationInterpSpeed);
+		const FRotator CurrentControlRot = HeroController->GetControlRotation();
 
-		GetHeroControllerFromActorInfo()->SetControlRotation(FRotator(TargetRot.Pitch, TargetRot.Yaw, 0.f));
-		GetHeroCharacterFromActorInfo()->SetActorRotation(FRotator(0.f, TargetRot.Yaw, 0.f));
+		// æ­»åŒºï¼šç›®æ ‡åœ¨å½“å‰é•œå¤´æ–¹å‘ TargetLockDeadzoneAngle å†…æ—¶ï¼Œyaw ä¿æŒä¸åŠ¨ï¼ˆæœ€å°ä¿®æ­£ï¼Œé˜²æŠ–ï¼‰
+		const float DeltaYaw = FMath::FindDeltaAngleDegrees(CurrentControlRot.Yaw, LookAtRot.Yaw);
+		if (FMath::Abs(DeltaYaw) > TargetLockDeadzoneAngle)
+		{
+			const float MoveToward = FMath::Abs(DeltaYaw) - TargetLockDeadzoneAngle;
+			LookAtRot.Yaw = CurrentControlRot.Yaw + (DeltaYaw > 0.f ? MoveToward : -MoveToward);
+		}
+		else
+		{
+			LookAtRot.Yaw = CurrentControlRot.Yaw;
+		}
 
+		const float RotationInterpSpeed = bIsSmoothingTargetSwitch
+			? TargetSwitchRotationInterpSpeed
+			: TargetLockRotationInterpSpeed;
+		const FRotator TargetRot = FMath::RInterpTo(CurrentControlRot, LookAtRot, DeltaTime, RotationInterpSpeed);
+
+		HeroController->SetControlRotation(FRotator(TargetRot.Pitch, TargetRot.Yaw, 0.f));
+		HeroCharacter->SetActorRotation(FRotator(0.f, TargetRot.Yaw, 0.f));
+
+		if (bIsSmoothingTargetSwitch
+			&& FMath::Abs(FMath::FindDeltaAngleDegrees(TargetRot.Yaw, LookAtRot.Yaw)) <= TargetSwitchCompletionTolerance)
+		{
+			bIsSmoothingTargetSwitch = false;
+		}
 	}
 }
 
 void UHeroGameplayAbility_TargetLock::SwitchTarget(const FGameplayTag& InSwitchDirectionTag)
 {
-	// »ñÈ¡¿É±»Ëø¶¨µÄÄ¿±ê¼¯ºÏ£¬²¢½«Æä²ð·ÖÎª½ÇÉ«×ó²àºÍÓÒ²àµÄÄ¿±ê¼¯ºÏ
+	// ï¿½ï¿½È¡ï¿½É±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ê¼¯ï¿½Ï£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½É«ï¿½ï¿½ï¿½ï¿½ï¿½Ò²ï¿½ï¿½Ä¿ï¿½ê¼¯ï¿½ï¿½
 	GetAvailableActorsToLock();
 
 	TArray<AActor*> ActorsOnLeft;
@@ -107,7 +174,7 @@ void UHeroGameplayAbility_TargetLock::SwitchTarget(const FGameplayTag& InSwitchD
 
 	GetAvailableActorsAroundTarget(ActorsOnLeft, ActorsOnRight);
 
-	// Èç¹ûËø¶¨·¶Î§Ïò×óÇÐ»»£¬Ñ¡Ôñ×ó²à¼¯ºÏÖÐ¾àÀë×î½üµÄÄ¿±êËø¶¨£¬·ñÔòÑ¡ÔñÓÒ²à¼¯ºÏÖÐ¾àÀë×î½üÄ¿±êËø¶¨
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î§ï¿½ï¿½ï¿½ï¿½ï¿½Ð»ï¿½ï¿½ï¿½Ñ¡ï¿½ï¿½ï¿½ï¿½à¼¯ï¿½ï¿½ï¿½Ð¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¡ï¿½ï¿½ï¿½Ò²à¼¯ï¿½ï¿½ï¿½Ð¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	if (InSwitchDirectionTag == WarriorGameplayTags::Player_Event_SwtichTarget_Left)
 	{
 		NewTargetToLock = GetNearestTargetFromAvailableActors(ActorsOnLeft);
@@ -116,72 +183,228 @@ void UHeroGameplayAbility_TargetLock::SwitchTarget(const FGameplayTag& InSwitchD
 	{
 		NewTargetToLock = GetNearestTargetFromAvailableActors(ActorsOnRight);
 	}
-	// ½«Ô¤Ëø¶¨Ä¿±êÇÐ»»Îªµ±Ç°Ëø¶¨Ä¿±ê
+	// ï¿½ï¿½Ô¤ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½Ð»ï¿½Îªï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½
 	if (NewTargetToLock)
 	{
-		CurrentLockedActor = NewTargetToLock;
+		SetCurrentLockedActor(NewTargetToLock);
 	}
+	// ï¿½ï¿½Ç°Ä¿ï¿½ï¿½ï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½Ú¸Ã·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò°ï¿½ï¿½ÔµÊ±ï¿½ï¿½ï¿½ï¿½ï¿½ÎºÎ²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½Ç°ï¿½ï¿½ï¿½ï¿½
 }
 
 void UHeroGameplayAbility_TargetLock::TryLockOnTarget()
 {
+	// ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ê¼¯ï¿½ï¿½
 	GetAvailableActorsToLock();
 
+	// Ã»ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	if (AvailableActorsToLock.IsEmpty())
 	{
 		CancelTargetLockAbility();
 		return;
 	}
 
-	CurrentLockedActor = GetNearestTargetFromAvailableActors(AvailableActorsToLock);
+	// ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½
+	SetCurrentLockedActor(GetNearestTargetFromAvailableActors(AvailableActorsToLock));
 
+	// ï¿½Ç·ï¿½É¹ï¿½ï¿½ï¿½È¡
 	if (CurrentLockedActor)
 	{
 		/*Debug::Print(CurrentLockedActor->GetActorNameOrLabel());*/
+		// ï¿½ï¿½ï¿½ï¿½Ä»ï¿½Ï»ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½Ö¸Ê¾ï¿½ï¿½
 		DrawTargetLockWidget();
-
+		// ï¿½ï¿½Ö¸Ê¾ï¿½ï¿½Î»ï¿½ï¿½ï¿½Æ¶ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		SetTargetLockWidgetPosition();
 	}
 	else
 	{
+		// È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		CancelTargetLockAbility();
 	}
 }
 
 void UHeroGameplayAbility_TargetLock::GetAvailableActorsToLock()
 {
-	// Çå¿Õ¿ÉËø¶¨µÄÄ¿±ê¼¯ºÏ
+	// ï¿½ï¿½Õ¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ê¼¯ï¿½ï¿½
 	AvailableActorsToLock.Empty();
 
-	// Ö¸¶¨°üÎ§ºÐ´óÐ¡¡¢¾àÀë¡¢¼ì²âµÄObjectÀàÐÍ£¬ÒÔ´ËÖ¸¶¨·¶Î§£¬ÔÚ·¶Î§ÄÚ¼ì²âËùÓÐ·ûºÏ²éÑ¯Ìõ¼þµÄActor£¬´æÈëBoxTraceHitsÖÐ
-	TArray<FHitResult> BoxTraceHits;
-
-	UKismetSystemLibrary::BoxTraceMultiForObjects(
-		GetHeroCharacterFromActorInfo(),
-		GetHeroCharacterFromActorInfo()->GetActorLocation(),
-		GetHeroCharacterFromActorInfo()->GetActorLocation() + GetHeroCharacterFromActorInfo()->GetActorForwardVector() * BoxTraceDistance,
-		TraceBoxSize / 2.f,
-		GetHeroCharacterFromActorInfo()->GetActorForwardVector().ToOrientationRotator(),
-		BoxTraceChannel,
-		false,
-		TArray<AActor*>(),
-		bShowPersistentDebugShape ? EDrawDebugTrace::Persistent : EDrawDebugTrace::None,
-		BoxTraceHits,
-		true
-	);
-	// ½«¼ì²âµ½µÄËùÓÐ·ÇÄÜÁ¦³ÖÓÐÕßActor¼ÓÈë¿ÉËø¶¨Ä¿±ê¼¯ºÏÖÐ
-	for (const FHitResult& TraceHit : BoxTraceHits)
+	AWarriorHeroCharacter* HeroCharacter = GetHeroCharacterFromActorInfo();
+	if (!IsValid(HeroCharacter))
 	{
-		if (AActor* HitActor = TraceHit.GetActor())
+		return;
+	}
+
+	// ï¿½ï¿½ï¿½Ú½ï¿½É«ï¿½ï¿½Î§ï¿½ï¿½ï¿½ï¿½ï¿½Î¾ï¿½ï¿½ï¿½ï¿½É¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½Ê±Â©ï¿½ï¿½
+	TArray<AActor*> ActorsToIgnore;
+	ActorsToIgnore.Add(HeroCharacter);
+
+	TArray<AActor*> OverlappedActors;
+	UKismetSystemLibrary::SphereOverlapActors(
+		HeroCharacter,
+		HeroCharacter->GetActorLocation(),
+		BoxTraceDistance,
+		BoxTraceChannel,
+		APawn::StaticClass(),
+		ActorsToIgnore,
+		OverlappedActors
+	);
+
+	// ï¿½ï¿½ï¿½Î¼ï¿½ï¿½Ö»ï¿½ï¿½ï¿½ï¿½É¸ï¿½ï¿½ï¿½ï¿½ï¿½Õºï¿½Ñ¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Óªï¿½ï¿½ï¿½ï¿½î¡¢ï¿½ï¿½Ò°ï¿½ï¿½ï¿½ï¿½Ä»ï¿½ï¿½ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½
+	for (AActor* OverlappedActor : OverlappedActors)
+	{
+		if (IsValidTargetToLock(OverlappedActor))
 		{
-			if (HitActor != GetHeroCharacterFromActorInfo())
-			{
-				AvailableActorsToLock.AddUnique(HitActor);
-			}
+			AvailableActorsToLock.AddUnique(OverlappedActor);
 		}
 	}
 }
 
+bool UHeroGameplayAbility_TargetLock::IsValidTargetToLock(AActor* TargetActor, bool bRequireLineOfSight)
+{
+	AWarriorHeroCharacter* HeroCharacter = GetHeroCharacterFromActorInfo();
+	AWarriorHeroController* HeroController = GetHeroControllerFromActorInfo();
+	APawn* TargetPawn = Cast<APawn>(TargetActor);
+
+	if (!IsValid(HeroCharacter)
+		|| !IsValid(HeroController)
+		|| !IsValid(TargetPawn)
+		|| TargetPawn == HeroCharacter)
+	{
+		return false;
+	}
+
+	// Ö»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Óµï¿½ï¿½ASCï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÒµÐ¶Ôµï¿½Pawn
+	if (!UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetPawn)
+		|| DoesActorHaveGameplayTag(TargetPawn, WarriorGameplayTags::Shared_Status_Dead)
+		|| !UWarriorFunctionLibrary::IsTargetPawnHostile(HeroCharacter, TargetPawn))
+	{
+		return false;
+	}
+
+	const FVector HeroLocation = HeroCharacter->GetActorLocation();
+	const FVector TargetLocation = TargetPawn->GetActorLocation();
+	if (FVector::DistSquared(HeroLocation, TargetLocation) > FMath::Square(BoxTraceDistance))
+	{
+		return false;
+	}
+
+	FVector CameraLocation;
+	FRotator CameraRotation;
+	HeroController->GetPlayerViewPoint(CameraLocation, CameraRotation);
+
+	// Ä¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	const FVector CameraToTargetDirection = (TargetLocation - CameraLocation).GetSafeNormal();
+	const float ViewConeDotThreshold = FMath::Cos(FMath::DegreesToRadians(TargetLockViewConeHalfAngle));
+	if (FVector::DotProduct(CameraRotation.Vector(), CameraToTargetDirection) < ViewConeDotThreshold)
+	{
+		return false;
+	}
+
+	// ï¿½ï¿½ï¿½Ë´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½Í¶ï¿½ï¿½ï¿½Úµï¿½Ç°ï¿½ï¿½Ä»ï¿½ï¿½Î§ï¿½ï¿½
+	FVector2D ScreenPosition;
+	int32 ViewportSizeX = 0;
+	int32 ViewportSizeY = 0;
+	HeroController->GetViewportSize(ViewportSizeX, ViewportSizeY);
+	if (ViewportSizeX <= 0
+		|| ViewportSizeY <= 0
+		|| !HeroController->ProjectWorldLocationToScreen(TargetLocation, ScreenPosition, true)
+		|| ScreenPosition.X < 0.f
+		|| ScreenPosition.X > static_cast<float>(ViewportSizeX)
+		|| ScreenPosition.Y < 0.f
+		|| ScreenPosition.Y > static_cast<float>(ViewportSizeY))
+	{
+		return false;
+	}
+
+	return !bRequireLineOfSight || HasLineOfSightToTarget(TargetActor);
+}
+
+bool UHeroGameplayAbility_TargetLock::HasLineOfSightToTarget(AActor* TargetActor)
+{
+	AWarriorHeroCharacter* HeroCharacter = GetHeroCharacterFromActorInfo();
+	AWarriorHeroController* HeroController = GetHeroControllerFromActorInfo();
+	UWorld* World = GetWorld();
+	if (!IsValid(HeroCharacter)
+		|| !IsValid(HeroController)
+		|| !IsValid(TargetActor)
+		|| !World)
+	{
+		return false;
+	}
+
+	FVector CameraLocation;
+	FRotator CameraRotation;
+	HeroController->GetPlayerViewPoint(CameraLocation, CameraRotation);
+
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½ï¿½É¼ï¿½ï¿½Ô¼ï¿½â£¬ï¿½ï¿½ï¿½Ë¡ï¿½Ç½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½èµ²ï¿½ï¶¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½
+	FHitResult VisibilityHit;
+	FCollisionQueryParams QueryParams(SCENE_QUERY_STAT(TargetLockVisibility), true, HeroCharacter);
+	QueryParams.AddIgnoredActor(HeroCharacter);
+	const bool bHitBlockingObject = World->LineTraceSingleByChannel(
+		VisibilityHit,
+		CameraLocation,
+		TargetActor->GetActorLocation(),
+		ECC_Visibility,
+		QueryParams
+	);
+
+	AActor* HitActor = VisibilityHit.GetActor();
+	return !bHitBlockingObject
+		|| HitActor == TargetActor
+		|| (IsValid(HitActor) && HitActor->IsOwnedBy(TargetActor));
+}
+
+bool UHeroGameplayAbility_TargetLock::DoesActorHaveGameplayTag(AActor* TargetActor, const FGameplayTag& TagToCheck) const
+{
+	if (!IsValid(TargetActor) || !TagToCheck.IsValid())
+	{
+		return false;
+	}
+
+	if (UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor))
+	{
+		return TargetASC->HasMatchingGameplayTag(TagToCheck);
+	}
+
+	return false;
+}
+
+bool UHeroGameplayAbility_TargetLock::TrySelectNewTarget(AActor* TargetToExclude)
+{
+	GetAvailableActorsToLock();
+
+	if (TargetToExclude)
+	{
+		AvailableActorsToLock.Remove(TargetToExclude);
+	}
+
+	SetCurrentLockedActor(GetNearestTargetFromAvailableActors(AvailableActorsToLock));
+	return IsValid(CurrentLockedActor);
+}
+
+void UHeroGameplayAbility_TargetLock::SetCurrentLockedActor(AActor* NewLockedActor)
+{
+	bIsSmoothingTargetSwitch = false;
+	CurrentTargetOccludedTime = 0.f;
+
+	AWarriorHeroCharacter* HeroCharacter = GetHeroCharacterFromActorInfo();
+	if (IsValid(HeroCharacter) && IsValid(CurrentLockedActor) && IsValid(NewLockedActor))
+	{
+		const FVector HeroLocation = HeroCharacter->GetActorLocation();
+		const FVector CurrentTargetDirection = (CurrentLockedActor->GetActorLocation() - HeroLocation).GetSafeNormal();
+		const FVector NewTargetDirection = (NewLockedActor->GetActorLocation() - HeroLocation).GetSafeNormal();
+		const float DirectionDot = FMath::Clamp(
+			FVector::DotProduct(CurrentTargetDirection, NewTargetDirection),
+			-1.f,
+			1.f
+		);
+		const float TargetSwitchAngle = FMath::RadiansToDegrees(FMath::Acos(DirectionDot));
+		bIsSmoothingTargetSwitch = TargetSwitchAngle >= TargetSwitchSmoothAngleThreshold;
+	}
+
+	CurrentLockedActor = NewLockedActor;
+}
+
+// ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½
 AActor* UHeroGameplayAbility_TargetLock::GetNearestTargetFromAvailableActors(const TArray<AActor*>& InAvailableActors)
 {
 	float ClosestDistance = 0.f;
@@ -190,27 +413,36 @@ AActor* UHeroGameplayAbility_TargetLock::GetNearestTargetFromAvailableActors(con
 
 void UHeroGameplayAbility_TargetLock::GetAvailableActorsAroundTarget(TArray<AActor*>& OutActorsOnLeft, TArray<AActor*>& OutActorsOnRight)
 {
+	// ï¿½ï¿½È«ï¿½Ô¼ï¿½é£¬Ã»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îºï¿½Ä¿ï¿½ê£¬ï¿½ï¿½Ã»ï¿½Ð¿ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½Ê±ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½Ãºï¿½ï¿½ï¿½
 	if (!CurrentLockedActor || AvailableActorsToLock.IsEmpty())
 	{
 		CancelTargetLockAbility();
 		return;
 	}
 
+	// ï¿½ï¿½È¡ï¿½ï¿½Ò½ï¿½É«ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	const FVector PlayerLocation = GetHeroCharacterFromActorInfo()->GetActorLocation();
+	// ï¿½ï¿½ï¿½ãµ±Ç°ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½Î»ï¿½Ãµï¿½ï¿½ï¿½ï¿½Î»ï¿½ÃµÄ·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½
 	const FVector PlayerToCurrentNormalized = (CurrentLockedActor->GetActorLocation() - PlayerLocation).GetSafeNormal();
 
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ê¼¯ï¿½ï¿½
 	for (AActor* AvailableActor : AvailableActorsToLock)
 	{
+		// ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¡Ä¿ï¿½ê²»ï¿½ï¿½ï¿½Ú£ï¿½ï¿½ï¿½Îªï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ê£¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		if (!AvailableActor || AvailableActor == CurrentLockedActor) continue;
 		
+		// ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¡Ä¿ï¿½ï¿½ï¿½Î»ï¿½Ãµï¿½ï¿½ï¿½ï¿½Î»ï¿½ÃµÄ·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½
 		const FVector PlayerToAvailableNormalized = (AvailableActor->GetActorLocation() - PlayerLocation).GetSafeNormal();
 
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä²ï¿½Ë£ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ò£¨¼ï¿½Zï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶Ïºï¿½Ñ¡Ä¿ï¿½ï¿½Î»ï¿½Úµï¿½Ç°ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½à»¹ï¿½ï¿½ï¿½Ò²ï¿½
 		const FVector CrossResult = FVector::CrossProduct(PlayerToCurrentNormalized, PlayerToAvailableNormalized);
 
+		// ï¿½ï¿½ï¿½ï¿½Úµï¿½Ç°ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½à£¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò²ï¿½Äºï¿½Ñ¡Ä¿ï¿½ê¼¯
 		if (CrossResult.Z > 0.f)
 		{
 			OutActorsOnRight.AddUnique(AvailableActor);
 		}
+		// ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Äºï¿½Ñ¡Ä¿ï¿½ê¼¯
 		else
 		{
 			OutActorsOnLeft.AddUnique(AvailableActor);
@@ -218,29 +450,37 @@ void UHeroGameplayAbility_TargetLock::GetAvailableActorsAroundTarget(TArray<AAct
 	}
 }
 
+// ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½Ö¸Ê¾ï¿½ï¿½
 void UHeroGameplayAbility_TargetLock::DrawTargetLockWidget()
 {
 	if (!DrawnTargetLockWidget)
 	{
+		// ï¿½ï¿½ï¿½ï¿½Ç·ï¿½Ö¸ï¿½ï¿½Ö¸Ê¾ï¿½ï¿½UI
 		checkf(TargetLockWidgetClass, TEXT("Forgot to assign a valid widget class in Blueprint"));
 
+		// ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½Í´ï¿½ï¿½ï¿½UIï¿½Ø¼ï¿½
 		DrawnTargetLockWidget = CreateWidget<UWarriorWidgetBase>(GetHeroControllerFromActorInfo(), TargetLockWidgetClass);
 
+		// ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É¹ï¿½ï¿½ï¿½ï¿½ï¿½UIï¿½Ø¼ï¿½
 		check(DrawnTargetLockWidget);
 
+		// ï¿½ï¿½UIï¿½Ø¼ï¿½ï¿½ï¿½ï¿½Óµï¿½ï¿½ï¿½Ä»ï¿½ï¿½
 		DrawnTargetLockWidget->AddToViewport();
 	}
 	
 }
 
+// ï¿½ï¿½ï¿½ï¿½Ö¸Ê¾ï¿½ï¿½Î»ï¿½ï¿½
 void UHeroGameplayAbility_TargetLock::SetTargetLockWidgetPosition()
 {
+	// Ã»ï¿½Ð¿ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½Ã»ï¿½Ð³É¹ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸Ê¾ï¿½ï¿½Ê±È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	if (!DrawnTargetLockWidget || !CurrentLockedActor)
 	{
 		CancelTargetLockAbility();
 		return;
 	}
 
+	// ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½É«ï¿½ï¿½ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î¬Î»ï¿½ï¿½Í¶ï¿½äµ½ï¿½ï¿½Ä»ï¿½ï¿½ï¿½Î³É¶ï¿½Î¬ï¿½ï¿½Î»
 	FVector2D ScreenPosition;
 	UWidgetLayoutLibrary::ProjectWorldLocationToWidgetPosition(
 		GetHeroControllerFromActorInfo(),
@@ -249,6 +489,7 @@ void UHeroGameplayAbility_TargetLock::SetTargetLockWidgetPosition()
 		true
 	);
 
+	// ï¿½ï¿½ï¿½Ö¸Ê¾ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ß´ï¿½Îª0ï¿½ï¿½ï¿½ï¿½ï¿½É¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß´ï¿½Îªï¿½É¼ï¿½ï¿½ß´ï¿½
 	if (TargetLockWidgetSize == FVector2D::ZeroVector)
 	{
 		DrawnTargetLockWidget->WidgetTree->ForEachWidget(
@@ -263,60 +504,96 @@ void UHeroGameplayAbility_TargetLock::SetTargetLockWidgetPosition()
 		);
 	}
 
+	// ï¿½ï¿½Ö¸Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä»ï¿½Ð»ï¿½ï¿½Æµï¿½Î»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ãµï¿½UIï¿½Ø¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	ScreenPosition -= (TargetLockWidgetSize / 2.f);
 
 	DrawnTargetLockWidget->SetPositionInViewport(ScreenPosition, false);
 }
 
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÎªÄ¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½
 void UHeroGameplayAbility_TargetLock::InitTargetLockMovement()
 {
-	CachedDefaultMaxWalkSpeed = GetHeroCharacterFromActorInfo()->GetCharacterMovement()->MaxWalkSpeed;
+	UCharacterMovementComponent* MovementComponent = GetHeroCharacterFromActorInfo()->GetCharacterMovement();
 
-	GetHeroCharacterFromActorInfo()->GetCharacterMovement()->MaxWalkSpeed = TargetLockMaxWalkSpeed;
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ù£ï¿½ï¿½ï¿½ï¿½Ú½ï¿½ï¿½ï¿½Ê±ï¿½Ö¸ï¿½
+	CachedDefaultMaxWalkSpeed = MovementComponent->MaxWalkSpeed;
+	bCachedOrientRotationToMovement = MovementComponent->bOrientRotationToMovement;
+	bCachedUseControllerDesiredRotation = MovementComponent->bUseControllerDesiredRotation;
+	bHasCachedTargetLockMovementSettings = true;
+
+	// ï¿½ï¿½ï¿½ï¿½×´Ì¬ï¿½ï¿½GAÍ³Ò»ï¿½ï¿½ï¿½Æ½ï¿½É«ï¿½ï¿½ï¿½ò£¬±ï¿½ï¿½ï¿½CharacterMovementÍ¬Ê±ï¿½ï¿½ï¿½Ô³ï¿½ï¿½Æ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ª
+	MovementComponent->bOrientRotationToMovement = false;
+	MovementComponent->bUseControllerDesiredRotation = false;
+	MovementComponent->MaxWalkSpeed = TargetLockMaxWalkSpeed;
 }
 
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 void UHeroGameplayAbility_TargetLock::InitTargetLockMappingContext()
 {
+	// ï¿½ï¿½È¡ï¿½ï¿½É«ï¿½ó¶¨µï¿½ï¿½ï¿½Ç¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÏµÍ³
 	const ULocalPlayer* LocalPlayer = GetHeroControllerFromActorInfo()->GetLocalPlayer();
 
 	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(LocalPlayer);
 
 	check(Subsystem);
 
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	Subsystem->AddMappingContext(TargetLockMappingContext, 3);
 }
 
+// È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 void UHeroGameplayAbility_TargetLock::CancelTargetLockAbility()
 {
 	CancelAbility(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo(), GetCurrentActivationInfo(), true);
 }
 
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 void UHeroGameplayAbility_TargetLock::CleanUp()
 {
+	// ï¿½ï¿½Õ¿ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ê¼¯ï¿½ï¿½
 	AvailableActorsToLock.Empty();
 
+	// ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½Ã¿ï¿½
 	CurrentLockedActor = nullptr;
+	bIsSmoothingTargetSwitch = false;
+	CurrentTargetOccludedTime = 0.f;
 
+	// ï¿½Æ³ï¿½Ö¸Ê¾ï¿½ï¿½UIï¿½ï¿½ï¿½
 	if (DrawnTargetLockWidget)
 	{
 		DrawnTargetLockWidget->RemoveFromParent();
 	}
 
+	// Ö¸Ê¾ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½Ã¿ï¿½
 	DrawnTargetLockWidget = nullptr;
 
+	// Ö¸Ê¾ï¿½ï¿½ï¿½ß´ï¿½Ö¸ï¿½Îª0
 	TargetLockWidgetSize = FVector2D::ZeroVector;
 
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ù»Ö¸ï¿½Îª0
 	CachedDefaultMaxWalkSpeed = 0.f;
 }
 
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 void UHeroGameplayAbility_TargetLock::ResetTargetLockMovement()
 {
-	if (CachedDefaultMaxWalkSpeed > 0.f)
+	if (!bHasCachedTargetLockMovementSettings)
 	{
-		GetHeroCharacterFromActorInfo()->GetCharacterMovement()->MaxWalkSpeed = CachedDefaultMaxWalkSpeed;
+		return;
 	}
+
+	if (AWarriorHeroCharacter* HeroCharacter = GetHeroCharacterFromActorInfo())
+	{
+		UCharacterMovementComponent* MovementComponent = HeroCharacter->GetCharacterMovement();
+		MovementComponent->MaxWalkSpeed = CachedDefaultMaxWalkSpeed;
+		MovementComponent->bOrientRotationToMovement = bCachedOrientRotationToMovement;
+		MovementComponent->bUseControllerDesiredRotation = bCachedUseControllerDesiredRotation;
+	}
+
+	bHasCachedTargetLockMovementSettings = false;
 }
 
+// ï¿½Æ³ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½Øµï¿½ï¿½ï¿½ï¿½ï¿½Ó³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 void UHeroGameplayAbility_TargetLock::ResetTargetLockMappingContext()
 {
 	if (!GetHeroControllerFromActorInfo())

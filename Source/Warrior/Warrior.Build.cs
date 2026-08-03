@@ -17,17 +17,20 @@ public class Warrior : ModuleRules
             "GameplayTags",
 			"GameplayAbilities",
 			"GameplayTasks",
+			"AIModule",
             "AnimGraphRuntime",
 			"MotionWarping",
+			"TargetingSystem",
 			"Niagara",
 			"NavigationSystem",
+			"UMG",
 			"MoviePlayer"
         });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
 		// Uncomment if you are using Slate UI
-		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
+		PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
 		
 		// Uncomment if you are using online features
 		// PrivateDependencyModuleNames.Add("OnlineSubsystem");

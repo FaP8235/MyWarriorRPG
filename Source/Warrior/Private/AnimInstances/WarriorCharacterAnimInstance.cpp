@@ -23,9 +23,37 @@ void UWarriorCharacterAnimInstance::NativeThreadSafeUpdateAnimation(float DeltaS
 		return;
 	}
 
-	GroundSpeed = OwningCharacter->GetVelocity().Size2D();
+	const FVector CharacterVelocity = OwningCharacter->GetVelocity();
+	GroundSpeed = CharacterVelocity.Size2D();
 
 	bHasAcceleration = OwningMovementComponent->GetCurrentAcceleration().SizeSquared2D() > 0.f;
 
-	LocomotionDirection = UKismetAnimationLibrary::CalculateDirection(OwningCharacter->GetVelocity(), OwningCharacter->GetActorRotation());
+	const bool bIsMoving = GroundSpeed > LocomotionDirectionMinSpeed;
+	if (bIsMoving)
+	{
+		TargetLocomotionDirection = UKismetAnimationLibrary::CalculateDirection(
+			CharacterVelocity,
+			OwningCharacter->GetActorRotation()
+		);
+
+		if (!bWasMovingLastFrame)
+		{
+			// 起步或反向经过零速后直接采用正确方向，避免从错误方向绕行
+			LocomotionDirection = TargetLocomotionDirection;
+		}
+		else
+		{
+			// 使用最短角度差做指数平滑，正确跨越-180/180边界
+			const float DirectionDelta = FMath::FindDeltaAngleDegrees(
+				LocomotionDirection,
+				TargetLocomotionDirection
+			);
+			const float InterpAlpha = 1.f - FMath::Exp(-LocomotionDirectionInterpSpeed * DeltaSeconds);
+			LocomotionDirection = FMath::UnwindDegrees(
+				LocomotionDirection + DirectionDelta * InterpAlpha
+			);
+		}
+	}
+
+	bWasMovingLastFrame = bIsMoving;
 }

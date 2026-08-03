@@ -13,6 +13,11 @@ class UDataAsset_InputConfig;
 struct FInputActionValue;
 class UHeroCombatComponent;
 class UHeroUIComponent;
+class UMeleeTargetingComponent;
+class UAttackAssistComponent;
+class UThreatIndicatorComponent;
+class UCameraStrafeAssistComponent;
+class UWidgetComponent;
 /**
  * 
  */
@@ -51,8 +56,23 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	UHeroCombatComponent* HeroCombatComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	UMeleeTargetingComponent* MeleeTargetingComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	UAttackAssistComponent* AttackAssistComponent;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = "true"))
 	UHeroUIComponent* HeroUIComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = "true"))
+	UThreatIndicatorComponent* ThreatIndicatorComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
+	UCameraStrafeAssistComponent* CameraStrafeAssistComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = "true"))
+	UWidgetComponent* ThreatRingWidgetComponent;
 
 #pragma endregion
 
@@ -79,4 +99,8 @@ private:
 
 public:
 	FORCEINLINE UHeroCombatComponent* GetHeroCombatComponent() const { return HeroCombatComponent; }
+	FORCEINLINE UMeleeTargetingComponent* GetMeleeTargetingComponent() const { return MeleeTargetingComponent; }
+	FORCEINLINE UAttackAssistComponent* GetAttackAssistComponent() const { return AttackAssistComponent; }
+	FORCEINLINE UThreatIndicatorComponent* GetThreatIndicatorComponent() const { return ThreatIndicatorComponent; }
+	FORCEINLINE UCameraStrafeAssistComponent* GetCameraStrafeAssistComponent() const { return CameraStrafeAssistComponent; }
 };

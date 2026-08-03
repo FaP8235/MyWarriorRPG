@@ -5,6 +5,8 @@
 #include "Characters/WarriorHeroCharacter.h"
 #include "Controllers/WarriorHeroController.h"
 #include "Components/Combat/HeroCombatComponent.h"
+#include "Components/Combat/MeleeTargetingComponent.h"
+#include "Components/Combat/AttackAssistComponent.h"
 #include "AbilitySystem/WarriorAbilitySystemComponent.h"
 #include "WarriorGameplayTags.h"
 
@@ -35,6 +37,53 @@ UHeroCombatComponent* UWarriorHeroGameplayAbility::GetHeroCombatComponentFromAct
 UHeroUIComponent* UWarriorHeroGameplayAbility::GetHeroUIComponentFromActorInfo()
 {
     return GetHeroCharacterFromActorInfo()->GetHeroUIComponent();
+}
+
+UMeleeTargetingComponent* UWarriorHeroGameplayAbility::GetMeleeTargetingComponentFromActorInfo()
+{
+    if (AWarriorHeroCharacter* HeroCharacter = GetHeroCharacterFromActorInfo())
+    {
+        return HeroCharacter->GetMeleeTargetingComponent();
+    }
+    return nullptr;
+}
+
+UAttackAssistComponent* UWarriorHeroGameplayAbility::GetAttackAssistComponentFromActorInfo()
+{
+    if (AWarriorHeroCharacter* HeroCharacter = GetHeroCharacterFromActorInfo())
+    {
+        return HeroCharacter->GetAttackAssistComponent();
+    }
+    return nullptr;
+}
+
+bool UWarriorHeroGameplayAbility::PrepareMeleeAttack(
+    UDataAsset_CombatAttackProfile* AttackProfile,
+    const FVector2D InputIntent,
+    FWarriorCombatAttackContext& OutAttackContext)
+{
+    UMeleeTargetingComponent* TargetingComponent = GetMeleeTargetingComponentFromActorInfo();
+    UAttackAssistComponent* AssistComponent = GetAttackAssistComponentFromActorInfo();
+    if (!TargetingComponent
+        || !TargetingComponent->SelectMeleeTarget(AttackProfile, InputIntent, OutAttackContext))
+    {
+        return false;
+    }
+
+    if (AssistComponent && OutAttackContext.bHasTarget)
+    {
+        FTransform WarpTargetTransform;
+        AssistComponent->PrepareAttackAssist(OutAttackContext, WarpTargetTransform);
+    }
+    return true;
+}
+
+void UWarriorHeroGameplayAbility::FinishMeleeAttack()
+{
+    if (UAttackAssistComponent* AssistComponent = GetAttackAssistComponentFromActorInfo())
+    {
+        AssistComponent->ClearAttackAssist();
+    }
 }
 
 FGameplayEffectSpecHandle UWarriorHeroGameplayAbility::MakeHeroDamageEffectSpecHandle(TSubclassOf<UGameplayEffect> EffectClass, float InWeaponBaseDamage, FGameplayTag InCurrentAttackTypeTag, int32 InUsedComboCount)

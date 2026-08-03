@@ -12,6 +12,11 @@
 #include "WarriorGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "SaveGame/WarriorSaveGame.h"
+#include "DataAssets/Combat/DataAsset_CombatAttackProfile.h"
+#include "MotionWarpingComponent.h"
+#include "GameFramework/Controller.h"
+#include "Combat/WarriorCombatDebug.h"
+#include "DrawDebugHelpers.h"
 
 #include "WarriorDebugHelper.h"
 
@@ -20,6 +25,75 @@ UWarriorAbilitySystemComponent* UWarriorFunctionLibrary::NativeGetWarriorASCFrom
     check(InActor);
 
     return CastChecked<UWarriorAbilitySystemComponent>(UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(InActor));
+}
+
+void UWarriorFunctionLibrary::ApplyStrikeAssist(AActor* InVictim, AActor* InAttacker, const UDataAsset_CombatAttackProfile* InAttackProfile)
+{
+    if (!InVictim || !InAttacker)
+    {
+        return;
+    }
+
+    UMotionWarpingComponent* MotionWarp = InVictim->FindComponentByClass<UMotionWarpingComponent>();
+    if (!MotionWarp)
+    {
+        return;
+    }
+
+    const float Strength = InAttackProfile ? FMath::Clamp(InAttackProfile->StrikeAssistStrength, 0.f, 1.f) : 0.6f;
+    const float WarpDistance = InAttackProfile ? FMath::Max(0.f, InAttackProfile->StrikeAssistWarpDistance) : 50.f;
+
+    const FVector VictimLoc = InVictim->GetActorLocation();
+    const FVector AttackerLoc = InAttacker->GetActorLocation();
+
+    const FVector2D HitDir = FVector2D(VictimLoc.X - AttackerLoc.X, VictimLoc.Y - AttackerLoc.Y).GetSafeNormal();
+
+    FVector2D CamDir = FVector2D::ZeroVector;
+    if (const APawn* AttackerPawn = Cast<APawn>(InAttacker))
+    {
+        if (const AController* Controller = AttackerPawn->GetController())
+        {
+            const FVector Forward = Controller->GetControlRotation().Vector();
+            CamDir = FVector2D(Forward.X, Forward.Y).GetSafeNormal();
+        }
+    }
+    if (CamDir.IsNearlyZero())
+    {
+        CamDir = HitDir;
+    }
+
+    // 拉扯目标 = 攻击者前方 PullDistance 处（近战甜蜜点：可砍到 + 在屏内）。把敌人往这里拽，保持可砍。
+    const float PullDistance = InAttackProfile ? FMath::Max(0.f, InAttackProfile->IdealAttackDistance) : 125.f;
+    const FVector PullPoint = AttackerLoc + FVector(CamDir.X, CamDir.Y, 0.f) * PullDistance;
+    const FVector2D TowardPull = FVector2D(PullPoint.X - VictimLoc.X, PullPoint.Y - VictimLoc.Y).GetSafeNormal();
+    if (TowardPull.IsNearlyZero())
+    {
+        return;
+    }
+
+    // 击退方向（远离英雄）与 指向甜蜜点方向（贴近英雄）的混合：Strength 越大越往甜蜜点拉。
+    const FVector2D TargetDir = FMath::Lerp(HitDir, TowardPull, Strength).GetSafeNormal();
+    if (TargetDir.IsNearlyZero())
+    {
+        return;
+    }
+
+    const FVector WarpPoint = VictimLoc + FVector(TargetDir.X, TargetDir.Y, 0.f) * WarpDistance;
+
+#if !UE_BUILD_SHIPPING
+    if (WarriorCombatDebug::IsStrikeAssistEnabled() && InVictim->GetWorld())
+    {
+        UWorld* W = InVictim->GetWorld();
+        const FVector Base = VictimLoc + FVector(0.f, 0.f, 40.f);
+        DrawDebugDirectionalArrow(W, Base, Base + FVector(HitDir.X, HitDir.Y, 0.f) * 100.f, 60.f, FColor::Red, false, 0.3f, 0, 2.f);
+        DrawDebugDirectionalArrow(W, Base, Base + FVector(CamDir.X, CamDir.Y, 0.f) * 100.f, 60.f, FColor::Cyan, false, 0.3f, 0, 2.f);
+        DrawDebugDirectionalArrow(W, Base, WarpPoint + FVector(0.f, 0.f, 40.f), 80.f, FColor::Green, false, 0.3f, 0, 4.f);
+        DrawDebugSphere(W, PullPoint + FVector(0.f, 0.f, 40.f), 12.f, 8, FColor::Yellow, false, 0.3f, 0, 2.f);
+        DrawDebugString(W, Base + FVector(0.f, 0.f, 30.f), FString::Printf(TEXT("SA s%.1f d%.0f"), Strength, WarpDistance), nullptr, FColor::Green, 0.3f, true, 1.f);
+    }
+#endif
+
+    MotionWarp->AddOrUpdateWarpTargetFromTransform(FName(TEXT("StrikeAssistTarget")), FTransform(InVictim->GetActorQuat(), WarpPoint));
 }
 
 void UWarriorFunctionLibrary::AddGameplayTagToActorIfNone(AActor* InActor, FGameplayTag TagToAdd)

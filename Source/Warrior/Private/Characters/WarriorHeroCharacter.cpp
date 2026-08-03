@@ -13,7 +13,13 @@
 #include "AbilitySystem/WarriorAbilitySystemComponent.h"
 #include "DataAssets/StartUpData/DataAsset_HeroStartUpData.h"
 #include "Components/Combat/HeroCombatComponent.h"
+#include "Components/Combat/MeleeTargetingComponent.h"
+#include "Components/Combat/AttackAssistComponent.h"
 #include "Components/UI/HeroUIComponent.h"
+#include "Components/UI/ThreatIndicatorComponent.h"
+#include "Components/Camera/CameraStrafeAssistComponent.h"
+#include "Components/WidgetComponent.h"
+#include "UI/WarriorThreatRingWidget.h"
 #include "AbilitySystemBlueprintLibrary.h"
 #include "GameModes/WarriorBaseGameMode.h"
 
@@ -44,7 +50,24 @@ AWarriorHeroCharacter::AWarriorHeroCharacter()
 
 	HeroCombatComponent = CreateDefaultSubobject<UHeroCombatComponent>(TEXT("HeroCombatComponent"));
 
+	MeleeTargetingComponent = CreateDefaultSubobject<UMeleeTargetingComponent>(TEXT("MeleeTargetingComponent"));
+
+	AttackAssistComponent = CreateDefaultSubobject<UAttackAssistComponent>(TEXT("AttackAssistComponent"));
+
 	HeroUIComponent = CreateDefaultSubobject<UHeroUIComponent>(TEXT("HeroUIComponent"));
+
+	ThreatIndicatorComponent = CreateDefaultSubobject<UThreatIndicatorComponent>(TEXT("ThreatIndicatorComponent"));
+
+	CameraStrafeAssistComponent = CreateDefaultSubobject<UCameraStrafeAssistComponent>(TEXT("CameraStrafeAssistComponent"));
+
+	ThreatRingWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("ThreatRingWidgetComponent"));
+	ThreatRingWidgetComponent->SetupAttachment(GetMesh(), TEXT("root"));
+	ThreatRingWidgetComponent->SetWidgetClass(UWarriorThreatRingWidget::StaticClass());
+	ThreatRingWidgetComponent->SetRelativeLocation(FVector(0.f, 0.f, 45.f));
+	ThreatRingWidgetComponent->SetRelativeRotation(FRotator(90.f, 0.f, 0.f)); // 水平朝上（环绕角色腰部）
+	ThreatRingWidgetComponent->SetDrawSize(FVector2D(160.f, 160.f)); // 世界单位 cm
+	ThreatRingWidgetComponent->SetWidgetSpace(EWidgetSpace::World);
+	ThreatRingWidgetComponent->SetTwoSided(true);
 }
 
 UPawnCombatComponent* AWarriorHeroCharacter::GetPawnCombatComponent() const
@@ -165,6 +188,11 @@ void AWarriorHeroCharacter::Input_Move(const FInputActionValue& InputActionValue
 
 void AWarriorHeroCharacter::Input_Look(const FInputActionValue& InputActionValue)
 {
+	if (CameraStrafeAssistComponent)
+	{
+		CameraStrafeAssistComponent->NotifyManualLook();
+	}
+
 	const FVector2D LookAxisVector = InputActionValue.Get<FVector2D>();
 
 	if (LookAxisVector.X != 0.f)
@@ -189,7 +217,7 @@ void AWarriorHeroCharacter::Input_SwitchTargetCompleted(const FInputActionValue&
 
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(
 		this,
-		SwitchDirection.X > 0.f ? WarriorGameplayTags::Player_Event_SwtichTarget_Right : WarriorGameplayTags::Player_Event_SwtichTarget_Left,
+		SwitchDirection.X > 0.f ? WarriorGameplayTags::Player_Event_SwtichTarget_Left : WarriorGameplayTags::Player_Event_SwtichTarget_Right,
 		Data
 	);
 

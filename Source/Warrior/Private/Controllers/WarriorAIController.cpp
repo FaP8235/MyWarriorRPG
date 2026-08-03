@@ -6,6 +6,7 @@
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Components/Combat/EnemyCombatAgentComponent.h"
 
 #include "WarriorDebugHelper.h"
 
@@ -66,6 +67,8 @@ void AWarriorAIController::BeginPlay()
 		CrowdComp->SetAvoidanceGroup(1);
 		CrowdComp->SetGroupsToAvoid(1);
 		CrowdComp->SetCrowdCollisionQueryRange(CollisionQueryRange);
+		// 关键：分离强度——不设默认过低，移动中不互相躲、胶囊碰撞抽搐。敌人半径由 crowd 自动从胶囊取。
+		CrowdComp->SetCrowdSeparationWeight(CrowdSeparationWeight);
 	}
 }
 
@@ -78,6 +81,14 @@ void AWarriorAIController::OnEnemyPerceptionUpdated(AActor* Actor, FAIStimulus S
 			if (Stimulus.WasSuccessfullySensed() && Actor)
 			{
 				BlackboardComponent->SetValueAsObject(FName("TargetActor"), Actor);
+				if (APawn* ControlledPawn = GetPawn())
+				{
+					if (UEnemyCombatAgentComponent* Agent =
+						ControlledPawn->FindComponentByClass<UEnemyCombatAgentComponent>())
+					{
+						Agent->SetCombatTarget(Actor);
+					}
+				}
 			}
 		}
 	}

@@ -4,11 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystem/Abilities/WarriorGameplayAbility.h"
+#include "Combat/WarriorCombatTypes.h"
 #include "WarriorHeroGameplayAbility.generated.h"
 
 class AWarriorHeroCharacter;
 class AWarriorHeroController;
 class UHeroCombatComponent;
+class UMeleeTargetingComponent;
+class UAttackAssistComponent;
+class UDataAsset_CombatAttackProfile;
 /**
  * 
  */
@@ -29,6 +33,21 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Warrior|Ability")
 	UHeroUIComponent* GetHeroUIComponentFromActorInfo();
+
+	UFUNCTION(BlueprintPure, Category = "Warrior|Ability")
+	UMeleeTargetingComponent* GetMeleeTargetingComponentFromActorInfo();
+
+	UFUNCTION(BlueprintPure, Category = "Warrior|Ability")
+	UAttackAssistComponent* GetAttackAssistComponentFromActorInfo();
+
+	UFUNCTION(BlueprintCallable, Category = "Warrior|Ability|Melee")
+	bool PrepareMeleeAttack(
+		UDataAsset_CombatAttackProfile* AttackProfile,
+		FVector2D InputIntent,
+		FWarriorCombatAttackContext& OutAttackContext);
+
+	UFUNCTION(BlueprintCallable, Category = "Warrior|Ability|Melee")
+	void FinishMeleeAttack();
 
 	UFUNCTION(BlueprintPure, Category = "Warrior|Ability")
 	FGameplayEffectSpecHandle MakeHeroDamageEffectSpecHandle(TSubclassOf<UGameplayEffect> EffectClass, float InWeaponBaseDamage, FGameplayTag InCurrentAttackTypeTag, int32 InUsedComboCount);

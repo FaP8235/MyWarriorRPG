@@ -7,6 +7,9 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "WarriorFunctionLibrary.h"
 #include "WarriorGameplayTags.h"
+#include "Characters/WarriorEnemyCharacter.h"
+#include "Components/Combat/AttackAssistComponent.h"
+#include "DataAssets/Combat/DataAsset_CombatAttackProfile.h"
 
 void UWarriorGameplayAbility::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
 {
@@ -91,6 +94,16 @@ void UWarriorGameplayAbility::ApplyGameplayEffectSpecHandleToHitResults(const FG
 						WarriorGameplayTags::Shared_Event_HitReact,
 						Data
 					);
+
+					if (Cast<AWarriorEnemyCharacter>(HitPawn))
+					{
+						const UDataAsset_CombatAttackProfile* StrikeProfile = nullptr;
+						if (UAttackAssistComponent* AttackAssist = OwningPawn->FindComponentByClass<UAttackAssistComponent>())
+						{
+							StrikeProfile = AttackAssist->GetActiveAttackContext().AttackProfile;
+						}
+						UWarriorFunctionLibrary::ApplyStrikeAssist(HitPawn, OwningPawn, StrikeProfile);
+					}
 				}
 			}
 		}

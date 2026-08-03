@@ -9,6 +9,7 @@
 
 class UWarriorAbilitySystemComponent;
 class UPawnCombatComponent;
+class UDataAsset_CombatAttackProfile;
 struct FScalableFloat;
 class UWarriorGameInstance;
 /**
@@ -49,6 +50,10 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Warrior|FunctionLibrary")
 	static bool IsValidBlock(AActor* InAttacker, AActor* InDefender);
+
+	/** Strike Assist：命中瞬间把受害者被击退轨迹偏向「镜头朝向 × 击中方向」，拉回屏内。warp 名 StrikeAssistTarget。 */
+	UFUNCTION(BlueprintCallable, Category = "Warrior|FunctionLibrary")
+	static void ApplyStrikeAssist(AActor* InVictim, AActor* InAttacker, const UDataAsset_CombatAttackProfile* InAttackProfile);
 
 	UFUNCTION(BlueprintCallable, Category = "Warrior|FunctionLibrary")
 	static bool ApplyGameplayEffectSpecHandleToTargetActor(AActor* InInstigator, AActor* InTargetActor, const FGameplayEffectSpecHandle& InSpecHandle);

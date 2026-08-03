@@ -4,6 +4,7 @@
 #include "Characters/WarriorEnemyCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/Combat/EnemyCombatComponent.h"
+#include "Components/Combat/EnemyCombatAgentComponent.h"
 #include "Engine/AssetManager.h"
 #include "DataAssets/StartUpData/DataAsset_EnemyStartUpData.h"
 #include "Components/UI/EnemyUIComponent.h"
@@ -30,6 +31,8 @@ AWarriorEnemyCharacter::AWarriorEnemyCharacter()
 	GetCharacterMovement()->BrakingDecelerationWalking = 1000.f;
 
 	EnemyCombatComponent = CreateDefaultSubobject<UEnemyCombatComponent>("EnemyCombatComponent");
+
+	EnemyCombatAgentComponent = CreateDefaultSubobject<UEnemyCombatAgentComponent>("EnemyCombatAgentComponent");
 	
 	EnemyUIComponent = CreateDefaultSubobject<UEnemyUIComponent>("EnemyUIComponent");
 
