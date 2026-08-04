@@ -112,4 +112,5 @@ private:
 
 	int32 MaxTokenBudget = 3;
 	int32 NextTokenId = 1;
+	float DebugDrawAccumulator = 0.f;
 };

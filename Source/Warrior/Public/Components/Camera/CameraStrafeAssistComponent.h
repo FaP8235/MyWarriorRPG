@@ -82,4 +82,5 @@ private:
 
 	TWeakObjectPtr<AActor> AttackRecenterTarget;
 	float AttackRecenterTimer = 0.f;
+	mutable float DebugDrawAccumulator = 0.f;
 };

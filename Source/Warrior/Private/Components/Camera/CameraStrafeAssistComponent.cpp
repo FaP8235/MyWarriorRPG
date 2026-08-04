@@ -123,7 +123,12 @@ void UCameraStrafeAssistComponent::TickComponent(
 		ApplyYawCorrection(FocusYaw, DeltaTime, bAttackRecenter);
 	}
 
-	DrawDebugState(FocusYaw, bHasFocus, bAttackRecenter);
+	DebugDrawAccumulator += DeltaTime;
+	if (DebugDrawAccumulator >= 0.1f)
+	{
+		DebugDrawAccumulator = 0.f;
+		DrawDebugState(FocusYaw, bHasFocus, bAttackRecenter);
+	}
 }
 
 bool UCameraStrafeAssistComponent::ComputeGroupFocusYaw(const FVector& OwnerLocation, float& OutYaw) const
@@ -267,7 +272,7 @@ void UCameraStrafeAssistComponent::DrawDebugState(const float FocusYaw, const bo
 		// 聚焦方向：绿
 		const FQuat FocusQuat(FVector::UpVector, FMath::DegreesToRadians(FocusYaw));
 		const FVector FocusDir = FocusQuat.RotateVector(FVector::ForwardVector) * 150.f;
-		DrawDebugLine(GetWorld(), Head, Head + FocusDir, FColor::Green, false, 0.f, 0, 2.f);
+		DrawDebugLine(GetWorld(), Head, Head + FocusDir, FColor::Green, false, 0.15f, 0, 2.f);
 		DrawDebugString(
 			GetWorld(),
 			Head + FVector(0.f, 0.f, 30.f),
@@ -276,7 +281,7 @@ void UCameraStrafeAssistComponent::DrawDebugState(const float FocusYaw, const bo
 				FocusYaw),
 			nullptr,
 			bAttackRecenter ? FColor::Orange : FColor::Green,
-			0.f,
+			0.15f,
 			true,
 			WarriorCombatDebug::GetTextScale());
 	}
@@ -289,7 +294,7 @@ void UCameraStrafeAssistComponent::DrawDebugState(const float FocusYaw, const bo
 			FString::Printf(TEXT("SocketOffset.Y: %.1f"), CachedSpringArm->SocketOffset.Y),
 			nullptr,
 			FColor::Cyan,
-			0.f,
+			0.15f,
 			true,
 			WarriorCombatDebug::GetTextScale());
 	}

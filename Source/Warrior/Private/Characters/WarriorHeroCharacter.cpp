@@ -21,6 +21,8 @@
 #include "Components/WidgetComponent.h"
 #include "UI/WarriorThreatRingWidget.h"
 #include "Combat/WarriorCombatTypes.h"
+#include "AbilitySystem/WarriorAttributeSet.h"
+#include "WarriorFunctionLibrary.h"
 #include "AbilitySystemBlueprintLibrary.h"
 #include "GameModes/WarriorBaseGameMode.h"
 
@@ -168,6 +170,23 @@ void AWarriorHeroCharacter::BeginPlay() {
 void AWarriorHeroCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	// GM toggle 持续效果（锁血/满怒/攻9999 每帧强制）
+	if (WarriorAttributeSet)
+	{
+		if (UWarriorFunctionLibrary::GM_IsGodModeOn())
+		{
+			WarriorAttributeSet->SetCurrentHealth(WarriorAttributeSet->GetMaxHealth());
+		}
+		if (UWarriorFunctionLibrary::GM_IsMaxRageOn())
+		{
+			WarriorAttributeSet->SetCurrentRage(WarriorAttributeSet->GetMaxRage());
+		}
+		if (UWarriorFunctionLibrary::GM_IsMaxAttackOn())
+		{
+			WarriorAttributeSet->SetAttackPower(9999.f);
+		}
+	}
 }
 
 void AWarriorHeroCharacter::Input_Move(const FInputActionValue& InputActionValue)

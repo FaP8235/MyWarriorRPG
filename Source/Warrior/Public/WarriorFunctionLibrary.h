@@ -10,6 +10,7 @@
 class UWarriorAbilitySystemComponent;
 class UPawnCombatComponent;
 class UDataAsset_CombatAttackProfile;
+class AWarriorEnemyCharacter;
 struct FScalableFloat;
 class UWarriorGameInstance;
 /**
@@ -74,4 +75,47 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Warrior|FunctionLibrary")
 	static bool TryLoadSavedGameDifficulty(EWarriorGameDifficulty& OutSavedDifficulty);
+
+	// ── GM 指令 ──
+
+	/** 视线前方刷一个敌人。 */
+	UFUNCTION(BlueprintCallable, Category = "Warrior|GM", meta = (WorldContext = "WorldContextObject"))
+	static void GM_SpawnEnemy(const UObject* WorldContextObject, TSubclassOf<AWarriorEnemyCharacter> EnemyClass);
+
+	/** 脚下刷一个拾取物。 */
+	UFUNCTION(BlueprintCallable, Category = "Warrior|GM", meta = (WorldContext = "WorldContextObject"))
+	static void GM_SpawnPickup(const UObject* WorldContextObject, TSubclassOf<AActor> PickupClass);
+
+	/** 满血。 */
+	UFUNCTION(BlueprintCallable, Category = "Warrior|GM", meta = (WorldContext = "WorldContextObject"))
+	static void GM_FullHealth(const UObject* WorldContextObject);
+
+	/** 满怒气。 */
+	UFUNCTION(BlueprintCallable, Category = "Warrior|GM", meta = (WorldContext = "WorldContextObject"))
+	static void GM_FullRage(const UObject* WorldContextObject);
+
+	/** 切换锁血。 */
+	UFUNCTION(BlueprintCallable, Category = "Warrior|GM")
+	static void GM_ToggleGodMode();
+
+	/** 切换持续满怒气。 */
+	UFUNCTION(BlueprintCallable, Category = "Warrior|GM")
+	static void GM_ToggleMaxRage();
+
+	/** 切换攻击力 9999。 */
+	UFUNCTION(BlueprintCallable, Category = "Warrior|GM", meta = (WorldContext = "WorldContextObject"))
+	static void GM_ToggleMaxAttack(const UObject* WorldContextObject);
+
+	/** 切换 Debug 全开。 */
+	UFUNCTION(BlueprintCallable, Category = "Warrior|GM")
+	static void GM_ToggleDebugAll();
+
+	/** 清空所有敌人。 */
+	UFUNCTION(BlueprintCallable, Category = "Warrior|GM", meta = (WorldContext = "WorldContextObject"))
+	static void GM_ClearAllEnemies(const UObject* WorldContextObject);
+
+	UFUNCTION(BlueprintPure, Category = "Warrior|GM") static bool GM_IsGodModeOn();
+	UFUNCTION(BlueprintPure, Category = "Warrior|GM") static bool GM_IsMaxRageOn();
+	UFUNCTION(BlueprintPure, Category = "Warrior|GM") static bool GM_IsMaxAttackOn();
+	UFUNCTION(BlueprintPure, Category = "Warrior|GM") static bool GM_IsDebugAllOn();
 };

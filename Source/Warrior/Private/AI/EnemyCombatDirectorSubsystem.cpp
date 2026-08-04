@@ -92,7 +92,13 @@ void UEnemyCombatDirectorSubsystem::Tick(const float DeltaTime)
 	}
 	CleanupInvalidState(CurrentTime);
 	GrantQueuedAttackTokens(CurrentTime);
-	DrawDebugState();
+
+	DebugDrawAccumulator += DeltaTime;
+	if (DebugDrawAccumulator >= 0.1f)
+	{
+		DebugDrawAccumulator = 0.f;
+		DrawDebugState();
+	}
 }
 
 TStatId UEnemyCombatDirectorSubsystem::GetStatId() const
@@ -663,7 +669,7 @@ void UEnemyCombatDirectorSubsystem::DrawDebugState()
 			const float Alpha = StartYawDeg
 				+ (EndYawDeg - StartYawDeg) * static_cast<float>(i) / static_cast<float>(SegmentCount);
 			const FVector Curr = PointAt(Alpha);
-			DrawDebugLine(GetWorld(), Prev, Curr, Color, false, 0.f, 0, Thickness);
+			DrawDebugLine(GetWorld(), Prev, Curr, Color, false, 0.15f, 0, Thickness);
 			Prev = Curr;
 		}
 	};
@@ -720,11 +726,11 @@ void UEnemyCombatDirectorSubsystem::DrawDebugState()
 			DrawDebugLine(GetWorld(),
 				Center + FVector(FMath::Cos(FMath::DegreesToRadians(StartYaw)), FMath::Sin(FMath::DegreesToRadians(StartYaw)), 0.f) * FrontMin,
 				Center + FVector(FMath::Cos(FMath::DegreesToRadians(StartYaw)), FMath::Sin(FMath::DegreesToRadians(StartYaw)), 0.f) * FrontMax,
-				FrontColor, false, 0.f, 0, 2.f);
+				FrontColor, false, 0.15f, 0, 2.f);
 			DrawDebugLine(GetWorld(),
 				Center + FVector(FMath::Cos(FMath::DegreesToRadians(EndYaw)), FMath::Sin(FMath::DegreesToRadians(EndYaw)), 0.f) * FrontMin,
 				Center + FVector(FMath::Cos(FMath::DegreesToRadians(EndYaw)), FMath::Sin(FMath::DegreesToRadians(EndYaw)), 0.f) * FrontMax,
-				FrontColor, false, 0.f, 0, 2.f);
+				FrontColor, false, 0.15f, 0, 2.f);
 
 			// 远处双同心圆。
 			DrawArc(Center, IdleMin, 0.f, 360.f, 48, IdleColor, 2.f);
@@ -762,7 +768,7 @@ void UEnemyCombatDirectorSubsystem::DrawDebugState()
 						10,
 						ZoneColor,
 						false,
-						0.f,
+						0.15f,
 						0,
 						bOccupied ? 4.f : 1.5f);
 
@@ -774,7 +780,7 @@ void UEnemyCombatDirectorSubsystem::DrawDebugState()
 							FString::Printf(TEXT("Position %d"), PositionIndex),
 							nullptr,
 							ZoneColor,
-							0.f,
+							0.15f,
 							true,
 							TextScale * 0.75f);
 
@@ -786,7 +792,7 @@ void UEnemyCombatDirectorSubsystem::DrawDebugState()
 						PositionLocation,
 						ZoneColor,
 						false,
-						0.f,
+						0.15f,
 						0,
 						2.f);
 						}
@@ -813,7 +819,7 @@ void UEnemyCombatDirectorSubsystem::DrawDebugState()
 					})),
 			nullptr,
 			FColor::Cyan,
-			0.f,
+			0.15f,
 			true,
 			TextScale);
 	}
@@ -834,7 +840,7 @@ void UEnemyCombatDirectorSubsystem::DrawDebugState()
 			24,
 			FColor::White,
 			false,
-			0.f,
+			0.15f,
 			0,
 			2.f,
 			FVector(1.f, 0.f, 0.f),
@@ -877,7 +883,7 @@ void UEnemyCombatDirectorSubsystem::DrawDebugState()
 				Agent->IsOnPlayerScreen() ? TEXT("Yes") : TEXT("No")),
 			nullptr,
 			StateColor,
-			0.f,
+			0.15f,
 			true,
 			TextScale);
 
@@ -889,7 +895,7 @@ void UEnemyCombatDirectorSubsystem::DrawDebugState()
 				CombatTarget->GetActorLocation(),
 				StateColor,
 				false,
-				0.f,
+				0.15f,
 				0,
 				bHasToken ? 4.f : 1.f);
 		}

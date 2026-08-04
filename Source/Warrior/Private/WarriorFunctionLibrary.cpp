@@ -17,6 +17,9 @@
 #include "GameFramework/Controller.h"
 #include "Combat/WarriorCombatDebug.h"
 #include "DrawDebugHelpers.h"
+#include "AbilitySystem/WarriorAttributeSet.h"
+#include "Characters/WarriorEnemyCharacter.h"
+#include "HAL/IConsoleManager.h"
 
 #include "WarriorDebugHelper.h"
 
@@ -95,6 +98,127 @@ void UWarriorFunctionLibrary::ApplyStrikeAssist(AActor* InVictim, AActor* InAtta
 
     MotionWarp->AddOrUpdateWarpTargetFromTransform(FName(TEXT("StrikeAssistTarget")), FTransform(InVictim->GetActorQuat(), WarpPoint));
 }
+
+// ── GM 指令实现 ──
+
+namespace GMState
+{
+    bool bGodMode = false;
+    bool bMaxRage = false;
+    bool bMaxAttack = false;
+    bool bDebugAll = false;
+    float SavedAttackPower = 0.f;
+}
+
+static UWarriorAttributeSet* GetGMAttrSet(const UObject* WorldContextObject)
+{
+    APawn* Pawn = UGameplayStatics::GetPlayerPawn(WorldContextObject, 0);
+    if (!Pawn) return nullptr;
+    UWarriorAbilitySystemComponent* ASC = UWarriorFunctionLibrary::NativeGetWarriorASCFromActor(Pawn);
+    if (!ASC) return nullptr;
+    for (UAttributeSet* Set : ASC->GetSpawnedAttributes())
+    {
+        if (UWarriorAttributeSet* WarriorSet = Cast<UWarriorAttributeSet>(Set))
+        {
+            return WarriorSet;
+        }
+    }
+    return nullptr;
+}
+
+void UWarriorFunctionLibrary::GM_SpawnEnemy(const UObject* WorldContextObject, TSubclassOf<AWarriorEnemyCharacter> EnemyClass)
+{
+    UWorld* World = GEngine ? GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull) : nullptr;
+    if (!World || !EnemyClass) return;
+
+    APawn* Hero = UGameplayStatics::GetPlayerPawn(WorldContextObject, 0);
+    if (!Hero) return;
+
+    APlayerController* PC = World->GetFirstPlayerController();
+    FVector CamLoc; FRotator CamRot;
+    if (PC) PC->GetPlayerViewPoint(CamLoc, CamRot);
+
+    const FVector SpawnLoc = Hero->GetActorLocation() + CamRot.Vector().GetSafeNormal2D() * 300.f;
+    FActorSpawnParameters Params;
+    Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+    World->SpawnActor<AWarriorEnemyCharacter>(EnemyClass, SpawnLoc, CamRot, Params);
+}
+
+void UWarriorFunctionLibrary::GM_SpawnPickup(const UObject* WorldContextObject, TSubclassOf<AActor> PickupClass)
+{
+    UWorld* World = GEngine ? GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull) : nullptr;
+    if (!World || !PickupClass) return;
+
+    APawn* Hero = UGameplayStatics::GetPlayerPawn(WorldContextObject, 0);
+    if (!Hero) return;
+
+    const FVector SpawnLoc = Hero->GetActorLocation() + Hero->GetActorForwardVector() * 50.f;
+    FActorSpawnParameters Params;
+    Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+    World->SpawnActor<AActor>(PickupClass, SpawnLoc, FRotator::ZeroRotator, Params);
+}
+
+void UWarriorFunctionLibrary::GM_FullHealth(const UObject* WorldContextObject)
+{
+    if (UWarriorAttributeSet* A = GetGMAttrSet(WorldContextObject))
+    {
+        A->SetCurrentHealth(A->GetMaxHealth());
+    }
+}
+
+void UWarriorFunctionLibrary::GM_FullRage(const UObject* WorldContextObject)
+{
+    if (UWarriorAttributeSet* A = GetGMAttrSet(WorldContextObject))
+    {
+        A->SetCurrentRage(A->GetMaxRage());
+    }
+}
+
+void UWarriorFunctionLibrary::GM_ToggleGodMode() { GMState::bGodMode = !GMState::bGodMode; }
+void UWarriorFunctionLibrary::GM_ToggleMaxRage() { GMState::bMaxRage = !GMState::bMaxRage; }
+
+void UWarriorFunctionLibrary::GM_ToggleMaxAttack(const UObject* WorldContextObject)
+{
+    GMState::bMaxAttack = !GMState::bMaxAttack;
+    if (UWarriorAttributeSet* A = GetGMAttrSet(WorldContextObject))
+    {
+        if (GMState::bMaxAttack)
+        {
+            GMState::SavedAttackPower = A->GetAttackPower();
+            A->SetAttackPower(9999.f);
+        }
+        else
+        {
+            A->SetAttackPower(GMState::SavedAttackPower);
+        }
+    }
+}
+
+void UWarriorFunctionLibrary::GM_ToggleDebugAll()
+{
+    GMState::bDebugAll = !GMState::bDebugAll;
+    if (IConsoleVariable* CVar = IConsoleManager::Get().FindConsoleVariable(TEXT("warrior.Combat.Debug.All")))
+    {
+        CVar->Set(GMState::bDebugAll ? 1 : 0, EConsoleVariableFlags::ECVF_SetByCode);
+    }
+}
+
+void UWarriorFunctionLibrary::GM_ClearAllEnemies(const UObject* WorldContextObject)
+{
+    UWorld* World = GEngine ? GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull) : nullptr;
+    if (!World) return;
+    TArray<AActor*> Enemies;
+    UGameplayStatics::GetAllActorsOfClass(World, AWarriorEnemyCharacter::StaticClass(), Enemies);
+    for (AActor* Enemy : Enemies)
+    {
+        Enemy->Destroy();
+    }
+}
+
+bool UWarriorFunctionLibrary::GM_IsGodModeOn()   { return GMState::bGodMode; }
+bool UWarriorFunctionLibrary::GM_IsMaxRageOn()   { return GMState::bMaxRage; }
+bool UWarriorFunctionLibrary::GM_IsMaxAttackOn() { return GMState::bMaxAttack; }
+bool UWarriorFunctionLibrary::GM_IsDebugAllOn()  { return GMState::bDebugAll; }
 
 void UWarriorFunctionLibrary::AddGameplayTagToActorIfNone(AActor* InActor, FGameplayTag TagToAdd)
 {
